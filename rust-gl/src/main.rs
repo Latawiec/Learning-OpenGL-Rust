@@ -5,6 +5,21 @@ extern crate gl;
 pub mod render_gl;
 pub mod resources;
 
+use render_gl::data;
+use render_gl::shader;
+
+#[macro_use] extern crate render_gl_derive;
+
+#[derive(VertexAttribPointers)]
+#[derive(Copy, Clone, Debug)]
+#[repr(C, packed)]
+struct Vertex {
+    #[location = 0]
+    pos: data::f32_f32_f32,
+    #[location = 1]
+    clr: data::f32_f32_f32,
+}
+
 fn main() {
     let _sdl = sdl2::init().unwrap();
     let video_subsystem = _sdl.video().unwrap();
@@ -30,28 +45,27 @@ fn main() {
 
     let res = resources::Resources::from_relative_exe_path(Path::new("assets")).unwrap();
 
-    let vert_shader = render_gl::Shader::from_resource(
+    let vert_shader = shader::Shader::from_resource(
         &gl,
         &res,
         "shaders/triangle.vert"
     ).unwrap();
 
-    let frag_shader = render_gl::Shader::from_resource(
+    let frag_shader = shader::Shader::from_resource(
         &gl,
         &res,
         "shaders/triangle.frag"
     ).unwrap();
 
-    let shader_program = render_gl::Program::from_shaders(
+    let shader_program = shader::Program::from_shaders(
         &gl,
         &[vert_shader, frag_shader]
     ).unwrap();
 
-    let vertices: Vec<f32> = vec![
-        // positions     // colors
-        -0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // bottom right
-         0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // bottom left
-         0.0,  0.5, 0.0, 0.0, 0.0, 1.0, // top
+    let vertices: Vec<Vertex> = vec![
+        Vertex { pos: (-0.5, -0.5, 0.0).into(), clr: (1.0, 0.0, 0.0).into() }, // bottom right
+        Vertex { pos: ( 0.5, -0.5, 0.0).into(), clr: (0.0, 1.0, 0.0).into() }, // bottom left
+        Vertex { pos: ( 0.0,  0.5, 0.0).into(), clr: (0.0, 0.0, 1.0).into() }, // top
     ];
 
     let mut vbo: gl::types::GLuint = 0;
@@ -63,7 +77,7 @@ fn main() {
         gl.BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl.BufferData(
             gl::ARRAY_BUFFER,
-            (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr,
+            (vertices.len() * std::mem::size_of::<Vertex>()) as gl::types::GLsizeiptr,
             vertices.as_ptr() as *const gl::types::GLvoid,
             gl::STATIC_DRAW
         );
@@ -79,25 +93,7 @@ fn main() {
         gl.BindVertexArray(vao);
         gl.BindBuffer(gl::ARRAY_BUFFER, vbo);
 
-        gl.EnableVertexAttribArray(0);
-        gl.VertexAttribPointer(
-            0,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            (6 * std::mem::size_of::<f32>()) as gl::types::GLint,
-            std::ptr::null()
-        );
-
-        gl.EnableVertexAttribArray(1);
-        gl.VertexAttribPointer(
-            1,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            (6 * std::mem::size_of::<f32>()) as gl::types::GLint,
-            (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid,
-        );
+        Vertex::vertex_attrib_pointers(&gl);
 
         gl.BindBuffer(gl::ARRAY_BUFFER, 0);
         gl.BindVertexArray(0);
