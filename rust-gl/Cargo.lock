@@ -860,6 +860,7 @@ dependencies = [
  "gl",
  "render_gl_derive",
  "sdl2",
+ "vec-2-10-10-10",
  "walkdir",
 ]
 
@@ -1435,6 +1436,12 @@ name = "vcpkg"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6454029bf181f092ad1b853286f23e2c507d8e8194d01d92da4a55c274a5508c"
+
+[[package]]
+name = "vec-2-10-10-10"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ef3c4d87f97be129e5e240a49efd7d129a965e5b6acdf8364725b0a894138be"
 
 [[package]]
 name = "version_check"
