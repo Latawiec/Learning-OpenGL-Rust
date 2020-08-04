@@ -4,6 +4,7 @@ extern crate proc_macro;
 extern crate syn;
 #[macro_use] extern crate quote;
 
+
 #[proc_macro_derive(VertexAttribPointers, attributes(location))]
 pub fn vertex_attrib_pointers_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     // Construct a string representation of type definition

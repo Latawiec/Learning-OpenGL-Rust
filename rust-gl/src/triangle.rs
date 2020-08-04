@@ -74,6 +74,10 @@ impl Triangle {
         })
     }
 
+    pub fn set_uniform<T: shader::UniformType>(&self, name: &str, value: &T) {
+        self.program.set_uniform(name, value)
+    }
+
     pub fn render(&self, gl: &gl::Gl) {
         self.program.set_used();
         self.vao.bind();

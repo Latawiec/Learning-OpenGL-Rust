@@ -2,7 +2,7 @@
 extern crate sdl2;
 extern crate gl;
 extern crate vec_2_10_10_10;
-extern crate nalgebra;
+extern crate nalgebra_glm as glm;
 
 pub mod render_gl;
 pub mod resources;
@@ -42,8 +42,18 @@ fn run() -> Result<(), failure::Error> {
 
     let mut viewport = render_gl::Viewport::for_window(900, 700);
     viewport.set_used(&gl);
+    let color_buffer = render_gl::ColorBuffer::from_color(glm::vec3(0.3, 0.3, 0.5));
 
     let triangle = triangle::Triangle::new(&res, &gl)?;
+    let mut camera = render_gl::Camera::new(glm::vec3(0f32, 0f32, 0f32), 45f32, 900f32/700f32, 0.1f32, 100f32);
+
+    triangle.set_uniform("view", &camera.get_view());
+    triangle.set_uniform("projection", &camera.get_proj());
+    let identity = glm::identity();
+    triangle.set_uniform("view", &identity);
+    //triangle.set_uniform("model", &glm::translate(&identity, &glm::vec3(0.0, 0.0, -1.0)));
+
+    let mut rotation = 0f32;
 
     'main: loop {
         for event in event_pump.poll_iter() {
@@ -60,12 +70,17 @@ fn run() -> Result<(), failure::Error> {
             }
         }
 
-        unsafe {
-            gl.Clear(gl::COLOR_BUFFER_BIT);
-        }
-        
+        color_buffer.clear(&gl);
+        color_buffer.set_used(&gl);
         triangle.render(&gl);
         window.gl_swap_window();
+
+        let rotation_vec = glm::vec3(rotation.sin(), 0f32, rotation.cos());
+        camera.set_target(camera.get_position().clone() + rotation_vec);
+        triangle.set_uniform("model", &glm::rotate(&glm::translate(&identity, &glm::vec3(0.0, 0.0, -1.0)), rotation, &glm::vec3(0.0, 1.0, 0.0)));
+
+        rotation += 0.001;
+        //println!("{:?}", rotation);
     }
 
     Ok(())

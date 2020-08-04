@@ -139,6 +139,19 @@
         id: gl::types::GLuint,
     }
 
+    pub trait UniformType {
+        fn set_uniform(&self, gl: &gl::Gl, loc: gl::types::GLint);
+    }
+
+    impl UniformType for glm::Mat4 {
+        fn set_uniform(&self, gl: &gl::Gl, loc: gl::types::GLint) {
+            unsafe {
+                gl.UniformMatrix4fv(loc, 1, gl::FALSE, self.data.as_ptr());
+            }
+        }
+    }
+
+
     impl Program {
         pub fn from_shaders(gl: &gl::Gl, shaders: &[Shader]) -> Result<Program, String> {
             let program_id = unsafe { gl.CreateProgram() };
@@ -189,6 +202,14 @@
             unsafe {
                 self.gl.UseProgram(self.id);
             }
+        }
+
+        pub fn set_uniform<T: UniformType>(&self, name: &str, value: &T) {
+            self.set_used();
+            unsafe {
+                let uniform_location = self.gl.GetUniformLocation(self.id, CString::new(name).unwrap().as_ptr());
+                value.set_uniform(&self.gl, uniform_location);
+            } 
         }
     }
 
